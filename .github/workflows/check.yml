@@ -39,6 +39,11 @@ jobs:
          restore-keys: |
            ${{ runner.os }}-renv-
            
+      - name: Check R_LIBS_USER
+        run: |
+          print(Sys.getenv("R_LIBS_USER"))
+        shell: Rscript {0}
+           
       - name: Install dependencies
         run: |
           if (file.exists("renv.lock")) {
