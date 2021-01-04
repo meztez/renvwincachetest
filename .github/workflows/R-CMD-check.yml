@@ -22,8 +22,8 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: windows-latest, r: 'release', renv: " ~\AppData\Local\renv"}
-          - {os: ubuntu-latest, r: 'release', renv: "~/.local/share/renv", rspm: "https://packagemanager.rstudio.com/cran/latest"}
+          - {os: windows-latest, r: 'release', renv: '~\AppData\Local\renv'}
+          - {os: ubuntu-latest, r: 'release', renv: '~/.local/share/renv', rspm: 'https://packagemanager.rstudio.com/cran/latest'}
 
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
