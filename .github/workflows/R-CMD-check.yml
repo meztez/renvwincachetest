@@ -22,13 +22,14 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: windows-latest, r: 'release'}
-          - {os: ubuntu-latest, r: 'release', rspm: "https://packagemanager.rstudio.com/cran/latest"}
+          - {os: windows-latest, r: 'release', renv: " ~\AppData\Local\renv"}
+          - {os: ubuntu-latest, r: 'release', renv: "~/.local/share/renv", rspm: "https://packagemanager.rstudio.com/cran/latest"}
 
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
       RSPM: ${{ matrix.config.rspm }}
       GITHUB_PAT: ${{ secrets.GH_PAT }}
+      R_RENV_CACHE_DIR: ${{ matrix.renv }}
 
     steps:
       - uses: actions/checkout@v2
@@ -47,10 +48,11 @@ jobs:
         shell: Rscript {0}
 
       - name: Cache R packages
-        if: runner.os != 'Windows'
         uses: actions/cache@v1
         with:
-          path: ${{ env.R_LIBS_USER }}
+          path: |
+            ${{ env.R_LIBS_USER }}
+            ${{ env.R_RENV_CACHE_DIR }}
           key: ${{ matrix.config.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
           restore-keys: ${{ matrix.config.os }}-${{ hashFiles('.github/R-version') }}-1-
 
@@ -64,7 +66,12 @@ jobs:
           sudo -s eval "$sysreqs"
       - name: Install dependencies
         run: |
-          remotes::install_deps(dependencies = TRUE)
+          if (file.exists("renv.lock")) {
+            if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")
+            renv::restore()
+          } else {
+            remotes::install_deps(dependencies = TRUE)
+          }
           remotes::install_cran("rcmdcheck")
         shell: Rscript {0}
 
