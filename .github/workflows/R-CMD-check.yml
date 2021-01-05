@@ -1,12 +1,8 @@
 on:
   push:
     branches: master
-    paths-ignore:
-    - '.github/**'
   pull_request:
     branches: master
-    paths-ignore:
-    - '.github/**'
   repository_dispatch:
     types: [check_trigger]
 
@@ -23,13 +19,12 @@ jobs:
       matrix:
         config:
           - {os: windows-latest, r: 'release', renv: '~\AppData\Local\renv'}
-          - {os: ubuntu-latest, r: 'release', renv: '~/.local/share/renv', rspm: 'https://packagemanager.rstudio.com/cran/latest'}
 
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
       RSPM: ${{ matrix.config.rspm }}
       GITHUB_PAT: ${{ secrets.GH_PAT }}
-      R_RENV_CACHE_DIR: ${{ matrix.renv }}
+      R_RENV_CACHE_DIR: ${{ matrix.config.renv }}
 
     steps:
       - uses: actions/checkout@v2
@@ -48,7 +43,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Cache R packages
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: |
             ${{ env.R_LIBS_USER }}
@@ -80,6 +75,9 @@ jobs:
           options(width = 100)
           pkgs <- installed.packages()[, "Package"]
           sessioninfo::session_info(pkgs, include_base = TRUE)
+          if (file.exists("renv.lock")) {
+            renv::diagnostics()
+          }
         shell: Rscript {0}
 
       - name: Check
@@ -92,3 +90,8 @@ jobs:
         if: always()
         run: find check -name 'testthat.Rout*' -exec cat '{}' \; || true
         shell: bash
+
+      - name: Fix path for Windows caching
+        if: runner.os == 'Windows'
+        shell: bash
+        run: echo "C:/Program Files/Git/usr/bin" >> $GITHUB_PATH
