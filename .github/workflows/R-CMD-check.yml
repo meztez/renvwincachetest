@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: windows-latest, r: 'release', renv: '~\AppData\Local\renv'}
+          - {os: windows-latest, r: 'release', renv: 'C:/Users/runneradmin/AppData/Local/renv'}
 
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
