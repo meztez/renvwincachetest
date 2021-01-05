@@ -28,6 +28,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      - uses: r-lib/actions/setup-r@master
+        with:
+          r-version: ${{ matrix.config.r }}
+
+      - uses: r-lib/actions/setup-pandoc@master
+
       - name: Query dependencies
         run: |
           install.packages("remotes")
@@ -39,8 +46,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ${{ env.R_RENV_CACHE_DIR }}
             ${{ env.R_LIBS_USER }}
+            ${{ env.R_RENV_CACHE_DIR }}
           key: ${{ matrix.config.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
           restore-keys: ${{ matrix.config.os }}-${{ hashFiles('.github/R-version') }}-1-
 
@@ -83,3 +90,8 @@ jobs:
         if: always()
         run: find check -name 'testthat.Rout*' -exec cat '{}' \; || true
         shell: bash
+
+      - name: Fix path for Windows caching
+        if: runner.os == 'Windows'
+        shell: bash
+        run: echo "C:/windows/System32" >> $GITHUB_PATH
