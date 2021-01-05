@@ -83,8 +83,3 @@ jobs:
         if: always()
         run: find check -name 'testthat.Rout*' -exec cat '{}' \; || true
         shell: bash
-
-      - name: Fix path for Windows caching
-        if: runner.os == 'Windows'
-        shell: bash
-        run: echo "C:/Program Files/Git/usr/bin" >> $GITHUB_PATH
