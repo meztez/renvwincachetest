@@ -41,7 +41,14 @@ jobs:
           saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
           writeLines(sprintf("R-%i.%i", getRversion()$major, getRversion()$minor), ".github/R-version")
         shell: Rscript {0}
-
+        
+      - name: Fix path for Windows caching
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          echo $GITHUB_PATH > GITHUB_PATH.bck
+          echo "C:/windows/System32" >> $GITHUB_PATH
+          
       - name: Cache R packages
         uses: actions/cache@v2
         with:
@@ -50,6 +57,12 @@ jobs:
             ${{ env.R_RENV_CACHE_DIR }}
           key: ${{ matrix.config.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
           restore-keys: ${{ matrix.config.os }}-${{ hashFiles('.github/R-version') }}-1-
+          
+      - name: Fix path for Windows caching
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          cat GITHUB_PATH.bck > $GITHUB_PATH
 
       - name: Install system dependencies
         if: runner.os == 'Linux'
@@ -59,6 +72,7 @@ jobs:
           Rscript -e "remotes::install_github('meztez/sysreqs')"
           sysreqs=$(Rscript -e "cat(sysreqs::sysreq_commands('DESCRIPTION', remotes = TRUE))")
           sudo -s eval "$sysreqs"
+          
       - name: Install dependencies
         run: |
           if (file.exists("renv.lock")) {
@@ -90,7 +104,7 @@ jobs:
         if: always()
         run: find check -name 'testthat.Rout*' -exec cat '{}' \; || true
         shell: bash
-
+        
       - name: Fix path for Windows caching
         if: runner.os == 'Windows'
         shell: bash
