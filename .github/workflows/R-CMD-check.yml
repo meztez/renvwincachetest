@@ -46,7 +46,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: bash
         run: |
-          echo $GITHUB_PATH > GITHUB_PATH.bck
+          cat $GITHUB_PATH > GITHUB_PATH.bck
           echo "C:/windows/System32" >> $GITHUB_PATH
           
       - name: Cache R packages
